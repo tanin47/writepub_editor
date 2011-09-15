@@ -2,7 +2,7 @@
 
  	$.fn.extend({ 
 
- 		writepub_editor: function(options) {
+ 		writepub_editor: function(overidden_options) {
 			
 			//alert("MSIE = " + $.browser.msie);
 			//alert("Safari = " + $.browser.safari);
@@ -12,19 +12,31 @@
 			
 			if(!$.browser.msie && !$.browser.mozilla && !$.browser.webkit) return;
 			
+			var options = {temporay_image_path: null,
+								on_leave_message:"If you leave, your content will be gone."}
+							
+			$.extend(options,overidden_options);
+			
 			id = $(this).attr("id");
 			classes = $(this).attr("class");
 			style = $(this).attr("style");
 			
-			writepub_editor.insert_toolbar(this[0]);
-			writepub_editor.image_dialog_box.setup(this[0]);
-			writepub_editor.link_dialog_box.setup(this[0]);
-			writepub_editor.video_dialog_box.setup(this[0]);
+			
 			
 			$(this).replaceWith('<iframe id="' + id + '"></iframe>');
 			
-			$('#'+id).attr("class", classes);
-			$('#'+id).attr("style", style);
+			var self = $('#'+id)[0];
+			
+			self.options = options;
+			$(self).attr("class", classes);
+			$(self).attr("style", style);
+			
+			writepub_editor.insert_toolbar(self);
+			writepub_editor.insert_expand_bar(self);
+			writepub_editor.image_dialog_box.setup(self);
+			writepub_editor.link_dialog_box.setup(self);
+			writepub_editor.video_dialog_box.setup(self);
+			
 			
 			setTimeout(function() {
 				var self = $('#'+id);
@@ -70,9 +82,9 @@
 	
 	            var e = e || window.event;
 	            // for ie, ff
-	            e.returnValue = "คุณได้พิมพ์เนื้อหาบางส่วนในหน้านี้แล้ว หากคุณออกไป เนื้อหาจะหายหมด";
+	            e.returnValue = self.options.on_leave_message;
 	            // for webkit
-	            return "คุณได้พิมพ์เนื้อหาบางส่วนในหน้านี้แล้ว หากคุณออกไป เนื้อหาจะหายหมด";             
+	            return self.options.on_leave_message;             
 	        }); 
 			
 			
@@ -200,6 +212,68 @@ writepub_editor.insert_toolbar = function(self) {
 			
 }
 
+writepub_editor.insert_expand_bar = function(self) {
+	
+	var id = self.id;
+	
+	$(self).after('<span id="'+id+'_expand_bar" unselectable="on" class="writepub_editor_expand_bar" style="width:' + $(self).outerWidth() + 'px">' +
+						'<span unselectable="on" onmousedown="this.focus();"></span>' +
+					'</span>');
+					
+	$(function() {
+		$("#"+id+"_expand_bar").children('span').draggable({
+			axis:'y',
+			iframeFix: true,
+			scroll:true,
+			scrollSpeed:1,
+			start: function(event, ui) {
+				$('#'+id).css('opacity',0.4);
+				
+				$('#'+id)[0].save_height = $('#'+id).height();
+			},
+			drag: function(event, ui) { 
+				//console.log(ui.position.top + " " + $('#'+id).height());
+				
+				var top = ui.position.top
+				ui.position.top = 0;
+				
+				var h = $('#'+id).height();
+				var new_h = $('#'+id)[0].save_height + top;
+				
+				if (new_h > 100) {
+					$('#'+id).css('height',new_h + 'px');
+				}
+				
+			},
+			stop: function(event, ui) { 
+				$('#'+id).css('opacity',1.0);
+				$('#'+id).focus();
+			}
+			
+		});
+		
+		disableSelection($("#"+id+"_expand_bar").children('span')[0])
+		disableSelection($("#"+id+"_expand_bar")[0])
+	});
+	
+
+	
+			
+}
+
+
+function disableSelection(target){
+
+    if (typeof target.onselectstart!="undefined") //IE route
+        target.onselectstart=function(){return false}
+
+    else if (typeof target.style.MozUserSelect!="undefined") //Firefox route
+        target.style.MozUserSelect="none"
+
+    else //All other route (ie: Opera)
+        target.onmousedown=function(){return false}
+
+}
 /*
  * Link dialog box handler
  * 
@@ -438,7 +512,7 @@ writepub_editor.image_dialog_box.setup = function(self) {
 	});
 	
 	$('#writepub_editor_upload_button').wiky_uploader({
-											action:'/temporary_file/image',
+											action: self.options.temporary_image_path,
 											mouseover_class:"button_hover",
 											mousedown_class:"button_down",
 											debug:false,

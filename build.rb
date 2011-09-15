@@ -17,10 +17,10 @@ def generate_minified_filename(f)
   
 end
 
-Dir[File.expand_path("../**/*.js", __FILE__)].each { |f| 
+Dir[File.expand_path("../*.js", __FILE__)].each { |f| 
   run_command("java -jar yuicompressor-2.4.6.jar \"#{f}\" -o \"#{generate_minified_filename(f)}\" --charset utf-8")
 }
 
-Dir[File.expand_path("../**/*.css", __FILE__)].each { |f| 
+Dir[File.expand_path("../*.css", __FILE__)].each { |f| 
   run_command("java -jar yuicompressor-2.4.6.jar \"#{f}\" -o \"#{generate_minified_filename(f)}\" --charset utf-8")
 }

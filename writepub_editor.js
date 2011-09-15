@@ -223,6 +223,7 @@ writepub_editor.link_dialog_box.open = function(input) {
 	
 	$('#writepub_editor_dialog_box_overlay').show();
 	$('#writepub_editor_link_dialog_box').show();
+	$('#writepub_editor_link_dialog_box_url').focus();
 }
 
 writepub_editor.link_dialog_box.submit = function() {
@@ -300,6 +301,7 @@ writepub_editor.video_dialog_box.open = function(input) {
 	
 	$('#writepub_editor_dialog_box_overlay').show();
 	$('#writepub_editor_video_dialog_box').show();
+	$('#writepub_editor_video_dialog_box_url').focus();
 }
 
 writepub_editor.video_dialog_box.submit = function() {
@@ -374,6 +376,7 @@ writepub_editor.image_dialog_box.open = function(input) {
 	
 	$('#writepub_editor_dialog_box_overlay').show();
 	$('#writepub_editor_image_dialog_box').show();
+	$('#writepub_editor_upload_button').focus();
 }
 
 writepub_editor.image_dialog_box.submit = function() {

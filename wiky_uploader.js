@@ -33,6 +33,7 @@
 				
 				// name of input
 				name: "Filedata",
+				prefixId: "AjaxUploadButton",
 				
 				// target upload path
 				action: "http://www.google.com",
@@ -204,7 +205,7 @@ wiky_uploader = function(button,options) {
 	
 	this._button = button;
 	this._rerouteClicks();
-	this._input = this._createInput(options.name);
+	this._input = this._createInput();
 	
 }
 
@@ -306,12 +307,13 @@ wiky_uploader.prototype = {
 	 * <div><input type='file' /></div>
 	 * Copied from fileuploader.js - http://github.com/valums/file-uploader
 	 */
-	_createInput: function(name){ 
+	_createInput: function(){ 
 	    var self = this;
 	                
 	    var input = document.createElement("input");
 	    input.setAttribute('type', 'file');
-	    input.setAttribute('name', name);
+	    input.setAttribute('name', self._options.name);
+		input.setAttribute('id', self._options.prefixId + "_" + self._button.id);
 		
 		if (self._options.multiple == true) {
 			input.setAttribute('multiple', 'multiple');

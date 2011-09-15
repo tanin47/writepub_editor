@@ -216,7 +216,7 @@ writepub_editor.insert_expand_bar = function(self) {
 	
 	var id = self.id;
 	
-	$(self).after('<span id="'+id+'_expand_bar" unselectable="on" class="writepub_editor_expand_bar" style="width:' + $(self).outerWidth() + 'px">' +
+	$(self).after('<span id="'+id+'_expand_bar" unselectable="on" class="writepub_editor_expand_bar" style="width:' + $(self).outerWidth() + 'px;float:' + $(self).css('float') + '">' +
 						'<span unselectable="on" onmousedown="this.focus();"></span>' +
 					'</span>');
 					

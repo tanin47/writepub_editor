@@ -2,7 +2,7 @@
 
  	$.fn.extend({ 
 
- 		writepub_editor: function(options) {
+ 		writepub_editor: function(overidden_options) {
 			
 			//alert("MSIE = " + $.browser.msie);
 			//alert("Safari = " + $.browser.safari);
@@ -12,19 +12,31 @@
 			
 			if(!$.browser.msie && !$.browser.mozilla && !$.browser.webkit) return;
 			
+			var options = {temporay_image_path: null,
+								on_leave_message:"If you leave, your content will be gone."}
+							
+			$.extend(options,overidden_options);
+			
 			id = $(this).attr("id");
 			classes = $(this).attr("class");
 			style = $(this).attr("style");
 			
-			writepub_editor.insert_toolbar(this[0]);
-			writepub_editor.insert_image_dialog_box(this[0]);
-			writepub_editor.insert_link_dialog_box(this[0]);
-			writepub_editor.insert_video_dialog_box(this[0]);
+			
 			
 			$(this).replaceWith('<iframe id="' + id + '"></iframe>');
 			
-			$('#'+id).attr("class", classes);
-			$('#'+id).attr("style", style);
+			var self = $('#'+id)[0];
+			
+			self.options = options;
+			$(self).attr("class", classes);
+			$(self).attr("style", style);
+			
+			writepub_editor.insert_toolbar(self);
+			writepub_editor.insert_expand_bar(self);
+			writepub_editor.image_dialog_box.setup(self);
+			writepub_editor.link_dialog_box.setup(self);
+			writepub_editor.video_dialog_box.setup(self);
+			
 			
 			setTimeout(function() {
 				var self = $('#'+id);
@@ -70,10 +82,12 @@
 	
 	            var e = e || window.event;
 	            // for ie, ff
-	            e.returnValue = "คุณได้พิมพ์เนื้อหาบางส่วนในหน้านี้แล้ว หากคุณออกไป เนื้อหาจะหายหมด";
+	            e.returnValue = self.options.on_leave_message;
 	            // for webkit
-	            return "คุณได้พิมพ์เนื้อหาบางส่วนในหน้านี้แล้ว หากคุณออกไป เนื้อหาจะหายหมด";             
+	            return self.options.on_leave_message;             
 	        }); 
+			
+			
 		},
 		writepub_editor_tools: function(key){
 			
@@ -83,7 +97,7 @@
 			else if (key == 'open_link') writepub_editor.link_dialog_box.open(this[0]);
 			else if (key == 'link') writepub_editor.insert_link(this[0],arguments[1]);
 			
-			else if (key == 'open_image') writepub_editor.open_image_dialog_box(this[0]);
+			else if (key == 'open_image') writepub_editor.image_dialog_box.open(this[0]);
 			else if (key == 'image') writepub_editor.insert_image(this[0],arguments[1],arguments[2]);
 			
 			else if (key == 'open_video') writepub_editor.video_dialog_box.open(this[0]);
@@ -135,6 +149,8 @@ writepub_editor.insert_video = function(self, url) {
 	
 
 	if ($.browser.msie) {
+		// IE does not support InsertHTML command
+		
 		var i_document = $(self)[0].contentWindow.document;
 		
 		if (i_document.selection && i_document.selection.createRange) {
@@ -148,7 +164,27 @@ writepub_editor.insert_video = function(self, url) {
 	}
 }
 
+writepub_editor.insert_image = function(self, url) {
+	
+	if ($.browser.msie) { 
+		// Only IE has a problem with inserting multiple images at once (Problem with selection)
+		// Therefore, we insert HTML directly
+		
+		var image_html = '<img src="' + url + '">'; 
+		
+		var i_document = $(self)[0].contentWindow.document;
+		
+		if (i_document.selection && i_document.selection.createRange) {
+			var range = i_document.selection.createRange();
+			if (range.pasteHTML) {
+				range.pasteHTML(image_html);
+			}
+		}
+	} else {
+		$(self).contents()[0].execCommand("InsertImage", false, url);
+	}
 
+}
 
 writepub_editor.show_dialog_box_overlay = function() {
 	if ($('#writepub_editor_dialog_box_overlay').length == 0) {
@@ -176,6 +212,68 @@ writepub_editor.insert_toolbar = function(self) {
 			
 }
 
+writepub_editor.insert_expand_bar = function(self) {
+	
+	var id = self.id;
+	
+	$(self).after('<span id="'+id+'_expand_bar" unselectable="on" class="writepub_editor_expand_bar" style="width:' + $(self).outerWidth() + 'px;float:' + $(self).css('float') + '">' +
+						'<span unselectable="on" onmousedown="this.focus();"></span>' +
+					'</span>');
+					
+	$(function() {
+		$("#"+id+"_expand_bar").children('span').draggable({
+			axis:'y',
+			iframeFix: true,
+			scroll:true,
+			scrollSpeed:1,
+			start: function(event, ui) {
+				$('#'+id).css('opacity',0.4);
+				
+				$('#'+id)[0].save_height = $('#'+id).height();
+			},
+			drag: function(event, ui) { 
+				//console.log(ui.position.top + " " + $('#'+id).height());
+				
+				var top = ui.position.top
+				ui.position.top = 0;
+				
+				var h = $('#'+id).height();
+				var new_h = $('#'+id)[0].save_height + top;
+				
+				if (new_h > 100) {
+					$('#'+id).css('height',new_h + 'px');
+				}
+				
+			},
+			stop: function(event, ui) { 
+				$('#'+id).css('opacity',1.0);
+				$('#'+id).focus();
+			}
+			
+		});
+		
+		disableSelection($("#"+id+"_expand_bar").children('span')[0])
+		disableSelection($("#"+id+"_expand_bar")[0])
+	});
+	
+
+	
+			
+}
+
+
+function disableSelection(target){
+
+    if (typeof target.onselectstart!="undefined") //IE route
+        target.onselectstart=function(){return false}
+
+    else if (typeof target.style.MozUserSelect!="undefined") //Firefox route
+        target.style.MozUserSelect="none"
+
+    else //All other route (ie: Opera)
+        target.onmousedown=function(){return false}
+
+}
 /*
  * Link dialog box handler
  * 
@@ -186,6 +284,7 @@ writepub_editor.link_dialog_box.open = function(input) {
 	
 	writepub_editor.input = input;
 	
+	writepub_editor.input.focus();
 	writepub_editor.selection = writepub_editor.helper.save_selection(writepub_editor.input);
 	writepub_editor.show_dialog_box_overlay();
 	
@@ -198,6 +297,7 @@ writepub_editor.link_dialog_box.open = function(input) {
 	
 	$('#writepub_editor_dialog_box_overlay').show();
 	$('#writepub_editor_link_dialog_box').show();
+	$('#writepub_editor_link_dialog_box_url').focus();
 }
 
 writepub_editor.link_dialog_box.submit = function() {
@@ -220,7 +320,7 @@ writepub_editor.link_dialog_box.submit = function() {
 	
 }
 
-writepub_editor.insert_link_dialog_box = function(self) {
+writepub_editor.link_dialog_box.setup = function(self) {
 	
 	if ($('#writepub_editor_link_dialog_box').length > 0) return;
 	
@@ -262,6 +362,7 @@ writepub_editor.video_dialog_box.open = function(input) {
 	
 	writepub_editor.input = input;
 	
+	writepub_editor.input.focus();
 	writepub_editor.selection = writepub_editor.helper.save_selection(writepub_editor.input);
 	writepub_editor.show_dialog_box_overlay();
 	
@@ -274,6 +375,7 @@ writepub_editor.video_dialog_box.open = function(input) {
 	
 	$('#writepub_editor_dialog_box_overlay').show();
 	$('#writepub_editor_video_dialog_box').show();
+	$('#writepub_editor_video_dialog_box_url').focus();
 }
 
 writepub_editor.video_dialog_box.submit = function() {
@@ -294,7 +396,7 @@ writepub_editor.video_dialog_box.submit = function() {
 	
 }
 
-writepub_editor.insert_video_dialog_box = function(self) {
+writepub_editor.video_dialog_box.setup = function(self) {
 	
 	if ($('#writepub_editor_video_dialog_box').length > 0) return;
 	
@@ -330,7 +432,56 @@ writepub_editor.insert_video_dialog_box = function(self) {
  * Image dialog box handler
  * 
  */
-writepub_editor.insert_image_dialog_box = function() {
+writepub_editor.image_dialog_box = {};
+writepub_editor.image_dialog_box.open = function(input) {
+	
+	writepub_editor.input = input;
+	
+	writepub_editor.input.focus();
+	writepub_editor.selection = writepub_editor.helper.save_selection(writepub_editor.input);
+	writepub_editor.show_dialog_box_overlay();
+	
+	if ($('#writepub_editor_image_dialog_box').length == 0) {
+		alert("Please define #writepub_editor_image_dialog_box");
+		writepub_editor.close_dialog_box();
+	}
+	
+	$('#writepub_editor_image_dialog_box_url').val("");
+	
+	$('#writepub_editor_dialog_box_overlay').show();
+	$('#writepub_editor_image_dialog_box').show();
+	$('#writepub_editor_upload_button').focus();
+}
+
+writepub_editor.image_dialog_box.submit = function() {
+	
+	var url = $('#writepub_editor_image_dialog_box_url').val();
+	
+	writepub_editor.helper.restore_selection(writepub_editor.input, writepub_editor.selection);
+	
+	try {
+		
+		var spans = $('#writepub_editor_image_container').children('span');
+		
+		for (var i=0;i<spans.length;i++) {
+			if ($(spans[i]).hasClass('selected') && $(spans[i]).find('img').length > 0) {
+				url = $(spans[i]).find('img')[0].src;
+				writepub_editor.insert_image(writepub_editor.input, url);
+				$(spans[i]).removeClass('selected');
+			}
+		}
+		
+		
+		writepub_editor.close_dialog_box();
+		$('#writepub_editor_image_dialog_box_error_panel').hide();
+	} catch (e) {
+		$('#writepub_editor_image_dialog_box_error_panel').hide();
+		$('#writepub_editor_image_dialog_box_error_panel').html(e);
+		$('#writepub_editor_image_dialog_box_error_panel').fadeIn();
+	}
+	
+}
+writepub_editor.image_dialog_box.setup = function(self) {
 	
 	if ($('#writepub_editor_image_dialog_box').length > 0) return;
 	
@@ -340,15 +491,60 @@ writepub_editor.insert_image_dialog_box = function() {
 								'<span id="writepub_editor_image_container" style="width: 430px;height:190px;overflow:scroll;display:block;">' +
 								'</span>' +
 							'</span>' +
+							'<span id="writepub_editor_image_dialog_box_error_panel" style="display:none;">' +
+							'</span>' +
 							'<span class="writepub_editor_dialog_box_row">' +
-								'<input id="writepub_editor_insert_image_button" class="green_button" type="button" value="Insert selected images" onclick="$.writepub_editor_editor_image_dialog_box_insert_image();" />' +
+								'<input id="writepub_editor_insert_image_button" class="green_button" type="button" value="Insert selected images" onclick="writepub_editor.image_dialog_box.submit();" />' +
 								'<input id="writepub_editor_upload_button" class="blue_button" type="button" value="Upload File" />' +
-								'<input type="button" class="gray_button" value="Close" onclick="$.writepub_editor_editor_close_dialog_box();"/>' +
+								'<input type="button" class="gray_button" value="Close" onclick="writepub_editor.close_dialog_box();"/>' +
 							'</span>' +
 						'</div>' +
 					'</div>');
-		
+
+
+	$("#writepub_editor_image_container").delegate(".writepub_editor_thumbnail_unit", "click", function(){
+		$(this).toggleClass("selected");
+	});
+	
+	$("#writepub_editor_image_container").delegate(".writepub_editor_thumbnail_unit", "dblclick", function(){
+		$(this).addClass("selected");
+		writepub_editor.image_dialog_box.submit();
+	});
+	
+	$('#writepub_editor_upload_button').wiky_uploader({
+											action: self.options.temporary_image_path,
+											mouseover_class:"button_hover",
+											mousedown_class:"button_down",
+											debug:false,
+											params:{
+												max_width:400
+											},
+											onSubmit: function(fileId, fileName){
+												$('#writepub_editor_image_container').prepend(
+													'<span class="writepub_editor_thumbnail_unit" id="writepub_editor_thumbnail_unit_'+fileId+'">' +
+														'<span class="writepub_editor_thumbnail_unit_img">' +
+															'<span class="writepub_editor_thumbnail_unit_img_progress"></span>'+
+														'</span>'+
+														'<span class="writepub_editor_thumbnail_unit_text">'+fileName+'</span>'+
+													'</span>');
+											},
+									        onProgress: function(fileId, fileName, loaded, total){
+												
+												progress_span = $('#writepub_editor_thumbnail_unit_'+fileId).find('.writepub_editor_thumbnail_unit_img_progress');
+												progress_span = progress_span[0];
+										
+											},
+									        onComplete: function(fileId, fileName, responseJSON){
+												$('#writepub_editor_thumbnail_unit_'+fileId).find('.writepub_editor_thumbnail_unit_img_progress').remove();
+												
+												$('#writepub_editor_thumbnail_unit_'+fileId).children('.writepub_editor_thumbnail_unit_img').html('<img src="'+responseJSON.filename+'"/>');
+											},
+									        onCancel: function(id, fileName){
+												$('#writepub_editor_thumbnail_unit_'+fileId).fadeOut(function() {$(this).remove();});
+											}
+										});
 }
+
 
 /*
  * Helpers

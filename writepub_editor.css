@@ -1,3 +1,19 @@
+.writepub_editor_expand_bar{
+	background-color: #EEE;
+	height: 9px;
+	border-bottom: 1px solid #DDD;
+	display: block;
+}
+.writepub_editor_expand_bar span{
+	width: 40px;
+	height: 9px;
+	background-image: url(expandBar.png);
+	background-repeat: repeat-x;
+	margin: 0 auto;
+	display: block;
+	cursor:row-resize;
+}
+
 .writepub_editor_link_dialog_box {
 	font-family: "Helvetica Neue", Arial, Helvetica, 'Liberation Sans', FreeSans, sans-serif;
 	background-color:#DDDDDD;

@@ -383,13 +383,6 @@ writepub_editor.image_dialog_box.submit = function() {
 	
 	var url = $('#writepub_editor_image_dialog_box_url').val();
 	
-	t = "";
-	for (var i in writepub_editor.selection) {
-		t += i +"->"+writepub_editor.selection[i]+"\n";
-	}
-	
-	alert(t);
-	
 	writepub_editor.helper.restore_selection(writepub_editor.input, writepub_editor.selection);
 	
 	try {

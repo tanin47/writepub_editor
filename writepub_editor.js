@@ -131,7 +131,7 @@ writepub_editor.insert_video = function(self, url) {
 		url = "http://www.youtube.com/embed/"+result[4];
 	}
 	
-	video_html = '<iframe width="480" height="390" src="'+url+'" frameborder="0" allowfullscreen></iframe>'; 
+	video_html = '<iframe width="480" height="390" src="'+url+'" frameborder="0" allowfullscreen=""></iframe>'; 
 	
 
 	if ($.browser.msie) {

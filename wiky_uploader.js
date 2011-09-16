@@ -36,7 +36,7 @@
 				prefixId: "AjaxUploadButton",
 				
 				// target upload path
-				action: "http://www.google.com",
+				action: "/",
 				
 				// multiple
 				multiple: true,

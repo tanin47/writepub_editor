@@ -12,8 +12,9 @@
 			
 			if(!$.browser.msie && !$.browser.mozilla && !$.browser.webkit) return;
 			
-			var options = {temporay_image_path: null,
-								on_leave_message:"If you leave, your content will be gone."}
+			var options = {temporary_image_path: "/temporary_file/image",
+							on_leave_message:"If you leave, your content will be gone.",
+							css_path:"writepub_content_editor.css"}
 							
 			$.extend(options,overidden_options);
 			
@@ -39,7 +40,7 @@
 			
 			
 			setTimeout(function() {
-				var self = $('#'+id);
+				var self = $('#'+id)[0];
 			
 				$(self).attr("class", classes);
 				$(self).attr("style", style);
@@ -50,8 +51,10 @@
 				
 				setTimeout(function() {
 					
+					var self = $('#'+id)[0];
+					
 					var cssLink = document.createElement("link") 
-		            cssLink.href = "writepub_content_editor.css"; 
+		            cssLink.href = self.options.css_path; 
 		            cssLink.rel = "stylesheet"; 
 		            cssLink.type = "text/css"; 
 					
@@ -74,6 +77,7 @@
 				
 			},100);
 			
+			/*
 			$(window).bind('beforeunload', function(e){
 				
 				html = $.trim($('#' + id).contents().find('body').html());
@@ -85,7 +89,7 @@
 	            e.returnValue = self.options.on_leave_message;
 	            // for webkit
 	            return self.options.on_leave_message;             
-	        }); 
+	        });*/
 			
 			
 		},
@@ -202,7 +206,7 @@ writepub_editor.close_dialog_box = function(){
 writepub_editor.insert_toolbar = function(self) {
 	
 	var id = self.id;
-	$(self).before('<span class="writepub_editor_toolbar">' +
+	$(self).before('<span id="'+id+'_toolbar" class="writepub_editor_toolbar">' +
 						'<input type="button" unselectable="on" class="bold_button" onclick="$(\'#'+id+'\').writepub_editor_tools(\'b\');">' +
 						'<input type="button" unselectable="on" class="italic_button" onclick="$(\'#'+id+'\').writepub_editor_tools(\'i\');">' +
 						'<input type="button" unselectable="on" class="link_button" onclick="$(\'#'+id+'\').writepub_editor_tools(\'open_link\');">' +

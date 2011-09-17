@@ -12,9 +12,12 @@
 	<body>
 		<textarea id="editor" class="writepub_editor_textarea" style="width:600px;height:300px;display:block;"></textarea>
 		<span id="source"></span>
+		<br/><br/><br/>
+		<textarea id="editor2" class="writepub_editor_textarea" style="width:600px;height:300px;display:block;"></textarea>
 	</body>
 	<script type="text/javascript">
 		$('#editor').writepub_editor();
+		$('#editor2').writepub_editor();
 		
 		setTimeout("update_source()",1000);
 		

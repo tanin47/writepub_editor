@@ -18,9 +18,9 @@
 							
 			$.extend(options,overidden_options);
 			
-			id = $(this).attr("id");
-			classes = $(this).attr("class");
-			style = $(this).attr("style");
+			var id = $(this).attr("id");
+			var classes = $(this).attr("class");
+			var style = $(this).attr("style");
 			
 			
 			

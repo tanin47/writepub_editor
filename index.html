@@ -13,7 +13,19 @@
 		<textarea id="editor" class="writepub_editor_textarea" style="width:600px;height:300px;display:block;"></textarea>
 		<span id="source"></span>
 		<br/><br/><br/>
-		<textarea id="editor2" class="writepub_editor_textarea" style="width:600px;height:300px;display:block;"></textarea>
+		<textarea id="editor2" class="writepub_editor_textarea" style="width:600px;height:300px;display:block;">
+			<img src="test_upload_picture.jpg"/>
+			<b>Hello</b>aaaaaa
+			<img src="test_upload_picture.jpg"/>
+		</textarea>
+		<br/>
+		<input type="button" value="Set content" onclick="$('#editor2').val('aaaa');">
+		<input type="button" value="Get content" onclick="alert($('#editor2').val());">
+		<br/><br/><br/>
+		<textarea id="normal_editor"></textarea>
+		<br/>
+		<input type="button" value="Set content" onclick="$('#normal_editor').val('aaaa');">
+		<input type="button" value="Get content" onclick="alert($('#normal_editor').val());">
 	</body>
 	<script type="text/javascript">
 		$('#editor').writepub_editor();

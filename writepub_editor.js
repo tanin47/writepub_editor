@@ -1,6 +1,47 @@
 (function($){
+	
+	$.fn.old_val = $.fn.val;
 
  	$.fn.extend({ 
+	
+		val: function(value) {
+			
+			try {
+				
+				try {
+					if (this[0].tagName.toLowerCase() != "iframe") throw "Not iframe"
+				} catch (e) {
+					throw "Not iframe"
+				}
+				
+				if (value == undefined) {
+					content = $(this).contents().find('body').html();
+					
+					if ($.trim(content) == "<br>"
+						|| $.trim(content) == "<br/>"
+						|| $.trim(content) == "<br />")
+					{
+						content = "";
+					}	
+					
+					return content;
+					
+				} else {
+					return $(this).contents().find('body').html(value);
+				}
+					
+			} catch (e) {
+				
+				if (e != "Not iframe") throw e;
+				
+				if (value == undefined) {
+					return $(this).old_val();
+				} else {
+					return $(this).old_val(value);
+				}
+				
+			}
+		},
 
  		writepub_editor: function(overidden_options) {
 			
@@ -21,6 +62,7 @@
 			var id = $(this).attr("id");
 			var classes = $(this).attr("class");
 			var style = $(this).attr("style");
+			var pre_html = $(this).val();
 			
 			
 			
@@ -73,9 +115,11 @@
 						
 				    });
 					
-				},100);
+					$(self).contents().find('body').html(pre_html);
+					
+				},1);
 				
-			},100);
+			},1);
 			
 			/*
 			$(window).bind('beforeunload', function(e){

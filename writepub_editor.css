@@ -163,7 +163,7 @@
 .writepub_editor_editor_overlay {
 	position: absolute; 
 	top: 0pt; 
-	z-index: 1000; 
+	z-index: 100000; 
 	height: 1951px; 
 	left: 0pt; 
 	width: 100%;

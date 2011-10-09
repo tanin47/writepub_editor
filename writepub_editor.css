@@ -507,10 +507,10 @@
 .writepub_editor_dialog_textbox_input:-moz-placeholder {
     color: #CCC;
 }
-.writepub_editor_dialog_textbox_input:hover{
+/*.writepub_editor_dialog_textbox_input:hover{
 	background: none repeat scroll 0 0 #EEEEEE;
     color: #444;
-}
+}*/
 .writepub_editor_dialog_textbox_input:focus{
 	background: none repeat scroll 0 0 #EEEEEE;
     border: 1px solid #DDDDDD;
@@ -548,10 +548,10 @@
 .writepub_editor_textarea:-moz-placeholder {
     color: #CCC;
 }
-.writepub_editor_textarea:hover{
+/*.writepub_editor_textarea:hover{
 	background: none repeat scroll 0 0 #EEEEEE;
     color: #444;
-}
+}*/
 .writepub_editor_textarea:focus{
 	background: none repeat scroll 0 0 #EEEEEE;
 	border: 1px solid #DDDDDD;

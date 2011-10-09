@@ -1,6 +1,47 @@
 (function($){
+	
+	$.fn.old_val = $.fn.val;
 
  	$.fn.extend({ 
+	
+		val: function(value) {
+			
+			try {
+				
+				try {
+					if (this[0].tagName.toLowerCase() != "iframe") throw "Not iframe"
+				} catch (e) {
+					throw "Not iframe"
+				}
+				
+				if (value == undefined) {
+					content = $(this).contents().find('body').html();
+					
+					if ($.trim(content) == "<br>"
+						|| $.trim(content) == "<br/>"
+						|| $.trim(content) == "<br />")
+					{
+						content = "";
+					}	
+					
+					return content;
+					
+				} else {
+					return $(this).contents().find('body').html(value);
+				}
+					
+			} catch (e) {
+				
+				if (e != "Not iframe") throw e;
+				
+				if (value == undefined) {
+					return $(this).old_val();
+				} else {
+					return $(this).old_val(value);
+				}
+				
+			}
+		},
 
  		writepub_editor: function(overidden_options) {
 			
@@ -10,16 +51,19 @@
 			//alert("Mozilla = " + $.browser.mozilla);
 			//alert("Webkit = " + $.browser.webkit);
 			
+			if (this[0].writepub_editor_enabled == true) return;
 			if(!$.browser.msie && !$.browser.mozilla && !$.browser.webkit) return;
 			
-			var options = {temporay_image_path: null,
-								on_leave_message:"If you leave, your content will be gone."}
+			var options = {temporary_image_path: "/temporary_file/image",
+							on_leave_message:"If you leave, your content will be gone.",
+							css_path:"writepub_content_editor.css"}
 							
 			$.extend(options,overidden_options);
 			
-			id = $(this).attr("id");
-			classes = $(this).attr("class");
-			style = $(this).attr("style");
+			var id = $(this).attr("id");
+			var classes = $(this).attr("class");
+			var style = $(this).attr("style");
+			var pre_html = $(this).val();
 			
 			
 			
@@ -27,6 +71,8 @@
 			
 			var self = $('#'+id)[0];
 			
+			self.writepub_editor_enabled = true;
+			self.pre_html = pre_html;
 			self.options = options;
 			$(self).attr("class", classes);
 			$(self).attr("style", style);
@@ -37,43 +83,9 @@
 			writepub_editor.link_dialog_box.setup(self);
 			writepub_editor.video_dialog_box.setup(self);
 			
+			setTimeout("writepub_editor.initialize_designmode('"+id+"');",100);
 			
-			setTimeout(function() {
-				var self = $('#'+id);
-			
-				$(self).attr("class", classes);
-				$(self).attr("style", style);
-				
-				$(self).contents()[0].designMode = "on";
-				$(self)[0].contentEditable = "true";
-				
-				
-				setTimeout(function() {
-					
-					var cssLink = document.createElement("link") 
-		            cssLink.href = "writepub_content_editor.css"; 
-		            cssLink.rel = "stylesheet"; 
-		            cssLink.type = "text/css"; 
-					
-					$(self).contents().find('head')[0].appendChild(cssLink);
-					
-					$(self).contents().keydown(function(e) {
-				
-						if (e.ctrlKey == true) {
-							
-							doSomething = $('#'+id).writepub_editor_tools(String.fromCharCode(e.which).toLowerCase());
-							
-							if (doSomething == true) {
-								e.preventDefault();
-							}
-						}
-						
-				    });
-					
-				},100);
-				
-			},100);
-			
+			/*
 			$(window).bind('beforeunload', function(e){
 				
 				html = $.trim($('#' + id).contents().find('body').html());
@@ -85,7 +97,7 @@
 	            e.returnValue = self.options.on_leave_message;
 	            // for webkit
 	            return self.options.on_leave_message;             
-	        }); 
+	        });*/
 			
 			
 		},
@@ -116,6 +128,42 @@
 var writepub_editor = {};
 writepub_editor.input = null;
 writepub_editor.selection = null;
+
+writepub_editor.initialize_designmode = function(id) {
+	var self = $('#'+id)[0];
+
+	$(self).contents()[0].designMode = "on";
+	$(self)[0].contentEditable = "true";
+	
+	setTimeout("writepub_editor.intialize_css_and_key_event('"+id+"');",1);
+}
+
+writepub_editor.intialize_css_and_key_event = function(id) {
+
+	var self = $('#'+id)[0];
+	
+	var cssLink = document.createElement("link") 
+    cssLink.href = self.options.css_path; 
+    cssLink.rel = "stylesheet"; 
+    cssLink.type = "text/css"; 
+	
+	$(self).contents().find('head')[0].appendChild(cssLink);
+	
+	$(self).contents().keydown(function(e) {
+
+		if (e.ctrlKey == true) {
+			
+			doSomething = $('#'+id).writepub_editor_tools(String.fromCharCode(e.which).toLowerCase());
+			
+			if (doSomething == true) {
+				e.preventDefault();
+			}
+		}
+		
+    });
+	
+	$(self).contents().find('body').html(self.pre_html);
+}
 
 writepub_editor.insert_bold = function(self) {
 	$(self).contents()[0].execCommand("bold",false,""); 
@@ -202,7 +250,7 @@ writepub_editor.close_dialog_box = function(){
 writepub_editor.insert_toolbar = function(self) {
 	
 	var id = self.id;
-	$(self).before('<span class="writepub_editor_toolbar">' +
+	$(self).before('<span id="'+id+'_toolbar" class="writepub_editor_toolbar">' +
 						'<input type="button" unselectable="on" class="bold_button" onclick="$(\'#'+id+'\').writepub_editor_tools(\'b\');">' +
 						'<input type="button" unselectable="on" class="italic_button" onclick="$(\'#'+id+'\').writepub_editor_tools(\'i\');">' +
 						'<input type="button" unselectable="on" class="link_button" onclick="$(\'#'+id+'\').writepub_editor_tools(\'open_link\');">' +
@@ -324,7 +372,7 @@ writepub_editor.link_dialog_box.setup = function(self) {
 	
 	if ($('#writepub_editor_link_dialog_box').length > 0) return;
 	
-	$(self).after('<div id="writepub_editor_link_dialog_box" class="writepub_editor_link_dialog_box" style="position: fixed; width: 400px; z-index: 1001; top: 50%; left: 50%; display: block; margin-top: -75.5px; margin-left: -203px;display:none;">' +
+	$(self).after('<div id="writepub_editor_link_dialog_box" class="writepub_editor_link_dialog_box" style="position: fixed; width: 400px; z-index: 100001; top: 50%; left: 50%; display: block; margin-top: -75.5px; margin-left: -203px;display:none;">' +
 						'<div style="display:block;">'+
 							'<h1>'+
 								'Link'+
@@ -400,7 +448,7 @@ writepub_editor.video_dialog_box.setup = function(self) {
 	
 	if ($('#writepub_editor_video_dialog_box').length > 0) return;
 	
-	$(self).after('<div id="writepub_editor_video_dialog_box" class="writepub_editor_video_dialog_box" style="position: fixed; width: 400px; z-index: 1001; top: 50%; left: 50%; display: block; margin-top: -75.5px; margin-left: -203px;display:none;">' +
+	$(self).after('<div id="writepub_editor_video_dialog_box" class="writepub_editor_video_dialog_box" style="position: fixed; width: 400px; z-index: 100001; top: 50%; left: 50%; display: block; margin-top: -75.5px; margin-left: -203px;display:none;">' +
 						'<div style="display:block;">' +
 							'<h1>' +
 								'Youtube' +
@@ -485,7 +533,7 @@ writepub_editor.image_dialog_box.setup = function(self) {
 	
 	if ($('#writepub_editor_image_dialog_box').length > 0) return;
 	
-	$(self).after('<div id="writepub_editor_image_dialog_box" class="writepub_editor_image_dialog_box" style="position: fixed; width: 430px;height:200px; z-index: 1001; top: 50%; left: 50%; display: block; margin-top: -75.5px; margin-left: -223px;display:none;">' +
+	$(self).after('<div id="writepub_editor_image_dialog_box" class="writepub_editor_image_dialog_box" style="position: fixed; width: 430px;height:200px; z-index: 100001; top: 50%; left: 50%; display: block; margin-top: -75.5px; margin-left: -223px;display:none;">' +
 						'<div style="display:block;">' +
 							'<span id="writepub_editor_image_super_container" style="width: 430px;height:170px;overflow:hidden;display:block;">' +
 								'<span id="writepub_editor_image_container" style="width: 430px;height:190px;overflow:scroll;display:block;">' +

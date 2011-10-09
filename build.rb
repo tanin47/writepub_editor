@@ -10,9 +10,9 @@ def generate_minified_filename(f)
   tokens = name.split(".")
   
   if tokens.length == 1
-    return "#{name}-min"
+    return "#{name}"
   else
-    return "#{dir}/production/#{tokens[0..-2].join(".")}-min.#{tokens[-1]}"
+    return "#{dir}/production/#{tokens[0..-2].join(".")}.#{tokens[-1]}"
   end
   
 end

@@ -148,6 +148,7 @@ writepub_editor.intialize_css_and_key_event = function(id) {
     cssLink.type = "text/css"; 
 	
 	$(self).contents().find('head')[0].appendChild(cssLink);
+	$(self).contents().find('body').addClass("writepub_content_editor_area");
 	
 	$(self).contents().keydown(function(e) {
 

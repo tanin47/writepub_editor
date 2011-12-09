@@ -1,5 +1,5 @@
 
-img {
+.writepub_content_editor_area img {
 	display:block;
 	margin-top:10px;
 	margin-bottom:10px;
@@ -7,7 +7,7 @@ img {
 	height: auto !important;
 }
 
-iframe {
+.writepub_content_editor_area iframe {
 	display:block;
 	margin-top:10px;
 	margin-bottom:10px;
